@@ -4,19 +4,20 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
-import { View, Text } from 'react-native';
+import { TouchableOpacity } from 'react-native';
 
 // Screens
 import Login from './screens/Login';
 import Register from './screens/Register';
 import Homepage from './screens/Homepage';
 import PostMeal from './screens/PostMeal';
-import Profile from './screens/Profile';
+import Settings from './screens/Settings';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
-const MainTabs = () => {
+// Bottom Tab Navigation (No Profile here)
+const MainTabs = ({ navigation }) => {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -27,17 +28,17 @@ const MainTabs = () => {
           paddingBottom: 10,
         },
         tabBarIcon: ({ color, size, focused }) => {
-          let iconName;
+          let iconName = '';
           let iconSize = size;
 
           if (route.name === 'Homepage') {
             iconName = focused ? 'home' : 'home-outline';
-          } else if (route.name === 'PostMeal') {
+          } else if (route.name === 'PostButton') {
             iconName = 'add-circle';
-            iconSize = 30; // make center icon larger
-            color = '#4caf50'; // always green
-          } else if (route.name === 'Profile') {
-            iconName = focused ? 'person' : 'person-outline';
+            iconSize = 60;
+            color = '#4caf50';
+          } else if (route.name === 'Settings') {
+            iconName = focused ? 'settings' : 'settings-outline';
           }
 
           return <Ionicons name={iconName} size={iconSize} color={color} />;
@@ -47,8 +48,26 @@ const MainTabs = () => {
       })}
     >
       <Tab.Screen name="Homepage" component={Homepage} />
-      <Tab.Screen name="PostMeal" component={PostMeal} />
-      <Tab.Screen name="Profile" component={Profile} />
+
+      {/* Custom + Button for Posting */}
+      <Tab.Screen
+        name="PostButton"
+        component={Homepage}
+        options={{
+          tabBarButton: (props) => (
+            <TouchableOpacity onPress={() => navigation.navigate('PostMealModal')}>
+              <Ionicons
+                name="add-circle"
+                size={60}
+                color="#4caf50"
+                style={{ top: -20, alignSelf: 'center' }}
+              />
+            </TouchableOpacity>
+          ),
+        }}
+      />
+
+      <Tab.Screen name="Settings" component={Settings} />
     </Tab.Navigator>
   );
 };
@@ -57,9 +76,19 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
+        {/* Auth Screens */}
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="Register" component={Register} />
+
+        {/* Main App (with Bottom Tabs) */}
         <Stack.Screen name="Main" component={MainTabs} />
+
+        {/* Post Meal as Modal */}
+        <Stack.Screen
+          name="PostMealModal"
+          component={PostMeal}
+          options={{ presentation: 'modal' }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
